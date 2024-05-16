@@ -2,6 +2,9 @@ package Service;
 
 import Model.TicketModel;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +16,7 @@ public class TicketService {
         for (TicketModel ticketModel:ticketModels){
             if (ticketModel.getOrigin().equals("VVO") && ticketModel.getDestination().equals("TLV")){
                 String carrier = ticketModel.getCarrier();
-                int duration = Duration(ticketModel.getDeparture_time(),ticketModel.getArrival_time());
+                int duration = Duration(ticketModel.getDeparture_date(),ticketModel.getDeparture_time(),ticketModel.getArrival_date(),ticketModel.getArrival_time());
                 if (!minFlightTimes.containsKey(carrier)){
                     minFlightTimes.put(carrier,duration);
                 }else {
@@ -50,15 +53,10 @@ public class TicketService {
         double diff = avgprice - med;
         System.out.println("Разница между средней ценой и медианой: "+ diff);
     }
-    private int Duration(String departureTime, String arrivalTime) {
-        String[] departureParts = departureTime.split(":");
-        String[] arrivalParts = arrivalTime.split(":");
-        int departureHour = Integer.parseInt(departureParts[0]);
-        int departureMinute = Integer.parseInt(departureParts[1]);
-        int arrivalHour = Integer.parseInt(arrivalParts[0]);
-        int arrivalMinute = Integer.parseInt(arrivalParts[1]);
-        int durationHour = arrivalHour - departureHour;
-        int durationMinute = arrivalMinute - departureMinute;
-        return durationHour * 60 + durationMinute;
+    private int Duration(String departureDate, String departureTime, String arrivalDate, String arrivalTime) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yy H:mm");
+        LocalDateTime departureDateTime = LocalDateTime.parse(departureDate + " " + departureTime, dateTimeFormatter);
+        LocalDateTime arrivalDateTime = LocalDateTime.parse(arrivalDate + " " + arrivalTime, dateTimeFormatter);
+        return (int) ChronoUnit.MINUTES.between(departureDateTime, arrivalDateTime);
     }
 }
